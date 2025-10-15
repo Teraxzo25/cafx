@@ -138,8 +138,9 @@ export const apiService = {
     if (active !== undefined) params.active = active.toString();
     if (exchange) params.exchange = exchange;
     
+    // Make sure this is using the real API call, not mock data
     const response = await api.get('/api/futures/bots/', { params });
-    return Array.isArray(response.data) ? response.data : [];
+    return response.data;
   },
 
   startFuturesBot: async (botConfig: {
@@ -182,22 +183,13 @@ export const apiService = {
   },
 
   getSpotBots: async (active?: boolean, exchange?: string) => {
-    // Note: The API doesn't have a dedicated spot bots endpoint in the docs
-    // We'll use the main bots endpoint with spot=true filter
-    const response = await api.get('/api/bots/', { params: { spot: 'true' } });
-    let spotBots = response.data.spot || [];
+    const params: Record<string, any> = {};
+    if (active !== undefined) params.active = active.toString();
+    if (exchange) params.exchange = exchange;
     
-    // Apply additional filtering if needed
-    if (active !== undefined) {
-      spotBots = spotBots.filter((bot: any) => bot.is_running === active);
-    }
-    if (exchange) {
-      spotBots = spotBots.filter((bot: any) => 
-        bot.exchange?.toLowerCase() === exchange.toLowerCase()
-      );
-    }
-    
-    return spotBots;
+    // Make sure this is using the real API call, not mock data
+    const response = await api.get('/api/spot/bots/', { params });
+    return response.data;
   },
 
   startSpotBot: async (botConfig: {
@@ -485,12 +477,25 @@ export const apiService = {
     return response.data;
   },
 
+  // Add new method for getting subscription status if needed
+  getSubscriptionStatus: async () => {
+    const response = await api.get('/api/subscriptions/status/');
+    return response.data;
+  },
+
+  // Add method to resend invoice if needed
+  resendInvoice: async () => {
+    const response = await api.post('/api/subscriptions/resend-invoice/');
+    return response.data;
+  },
+
   cancelSubscription: async () => {
     const response = await api.post('/api/subscriptions/cancel/');
     return response.data;
   }
 };
 
+// Mock API functions for fallback/development
 // Mock API functions for fallback/development
 export const mockApi = {
   login: async (email: string, password: string) => {
