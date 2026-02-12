@@ -158,6 +158,9 @@ export const apiService = {
     exchange: string;
     api_key?: string;
     api_secret?: string;
+    loss_threshold?: number;
+    acceptable_loss_per_grid?: number;
+    enable_grid_stop_loss?: boolean;
   }) => {
     const { api_key, api_secret, ...config } = botConfig;
     const credentials = {
@@ -165,7 +168,7 @@ export const apiService = {
       api_secret: api_secret || localStorage.getItem('exchange_api_secret') || ''
     };
 
-    // Build request payload - only include fields that have values
+    // Build request payload - include all required fields
     const payload: Record<string, any> = {
       ...credentials,
       symbol: config.symbol,
@@ -182,7 +185,10 @@ export const apiService = {
     if (config.strategy_type) payload.strategy_type = config.strategy_type;
     if (config.run_hours !== undefined) payload.run_hours = Number(config.run_hours);
 
-    if (config.run_hours !== undefined) payload.run_hours = Number(config.run_hours);
+    // Add new required fields for stop loss
+    if (config.loss_threshold !== undefined) payload.loss_threshold = Number(config.loss_threshold);
+    if (config.acceptable_loss_per_grid !== undefined) payload.acceptable_loss_per_grid = Number(config.acceptable_loss_per_grid);
+    if (config.enable_grid_stop_loss !== undefined) payload.enable_grid_stop_loss = config.enable_grid_stop_loss;
 
     console.log('🚀 Sending startFuturesBot payload:', JSON.stringify(payload, null, 2));
     const response = await api.post('/api/futures/start-bot', payload);
@@ -265,6 +271,31 @@ export const apiService = {
     const response = await api.post('/api/spot/stop-spot/', { task_id });
     console.log('🛑 stopSpotBot API response:', response.data);
     return response.data;
+  },
+
+  // Get minimum investment required for a grid bot configuration
+  getMinInvestment: async (params: {
+    exchange: string;
+    symbol: string;
+    grid_size: number;
+    leverage?: number;
+  }) => {
+    const queryParams: Record<string, any> = {
+      exchange: params.exchange,
+      symbol: params.symbol,
+      grid_size: params.grid_size,
+    };
+    if (params.leverage !== undefined) {
+      queryParams.leverage = params.leverage;
+    }
+    const response = await api.get('/api/futures/min-investment/', { params: queryParams });
+    return response.data as { min_investment: string; currency: string };
+  },
+
+  // Poll bot status to confirm termination
+  getFuturesBotStatus: async (botId: number | string) => {
+    const response = await api.get(`/api/futures/bot-status/${botId}/`);
+    return response.data as { bot_id: number; is_running: boolean; status: string };
   },
 
   // Delete bot functions
