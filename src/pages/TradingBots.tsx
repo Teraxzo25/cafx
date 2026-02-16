@@ -11,7 +11,7 @@ import { PriceChart } from '../components/ui/PriceChart';
 import { apiService } from '../utils/api';
 import { getExchangeLogo, getExchangeGradient } from '../utils/exchangeLogos';
 import { useAuthStore } from '../store/authStore';
-import { Plus, TrendingUp, TrendingDown, Key, Eye, EyeOff, Trash2 } from 'lucide-react';
+import { Plus, TrendingUp, TrendingDown, Key, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { getErrorMessage, isAuthError, isPermissionError, isValidationError, isServerError } from '../utils/errorUtils';
 import { saveBotConfig, deleteBotConfig, hideBot, isBotHidden, cleanupHiddenBots } from '../utils/botStorage';
@@ -45,7 +45,6 @@ export const TradingBots: React.FC = () => {
   const [showModal, setShowModal] = useState(searchParams.get('create') === 'true');
   const [activeTab, setActiveTab] = useState<'all' | 'spot' | 'futures'>('all');
   const [creating, setCreating] = useState(false);
-  const [showApiSecret, setShowApiSecret] = useState(false);
   const [gridSizeError, setGridSizeError] = useState('');
   const [selectedBot, setSelectedBot] = useState<TradingBot | null>(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
@@ -686,7 +685,7 @@ export const TradingBots: React.FC = () => {
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-lg bg-[var(--color-primary)]/15 flex items-center justify-center">
-                    <img src="/MERLIN.png" alt="Bot" className="w-5 h-5 object-contain" />
+                    <img src="/MERLIN.jpg" alt="Bot" className="w-5 h-5 object-contain" />
                   </div>
                   <div>
                     <h3 className="font-semibold text-white">{bot.name || `${bot.pair || 'Unknown'} Bot`}</h3>
@@ -764,7 +763,7 @@ export const TradingBots: React.FC = () => {
       ) : (
         <div className="empty-state">
           <div className="empty-state-icon">
-            <img src="/MERLIN.png" alt="No bots" className="w-8 h-8 object-contain" />
+            <img src="/MERLIN.jpg" alt="No bots" className="w-8 h-8 object-contain" />
           </div>
           <h3 className="empty-state-title">No Bots Yet</h3>
           <p className="empty-state-description">
@@ -926,24 +925,15 @@ export const TradingBots: React.FC = () => {
               </p>
             )}
 
-            <div className="relative">
-              <Input
-                label="API Secret"
-                type={showApiSecret ? "text" : "password"}
-                value={botForm.api_secret}
-                onChange={(e) => setBotForm({ ...botForm, api_secret: e.target.value })}
-                placeholder="Enter your exchange API secret"
-                icon={<Key className="w-5 h-5 text-gray-400" />}
-                required
-              />
-              <button
-                type="button"
-                className="absolute right-3 top-9 text-gray-400 hover:text-white transition-colors"
-                onClick={() => setShowApiSecret(!showApiSecret)}
-              >
-                {showApiSecret ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-              </button>
-            </div>
+            <Input
+              label="API Secret"
+              type="password"
+              value={botForm.api_secret}
+              onChange={(e) => setBotForm({ ...botForm, api_secret: e.target.value })}
+              placeholder="Enter your exchange API secret"
+              icon={<Key className="w-5 h-5 text-gray-400" />}
+              required
+            />
             {botForm.api_secret && (botForm.api_secret.includes('@') || botForm.api_secret.length < 16) && (
               <p className="text-red-400 text-xs mt-1">
                 ⚠️ This doesn't look like a valid API secret. Please use your exchange API credentials.
@@ -965,7 +955,7 @@ export const TradingBots: React.FC = () => {
             <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4">
               <div className="flex items-start space-x-3">
                 <div className="flex-shrink-0">
-                  <img src="/MERLIN.png" alt="AI Mode" className="w-8 h-8 object-contain" />
+                  <img src="/MERLIN.jpg" alt="AI Mode" className="w-8 h-8 object-contain" />
                 </div>
                 <div>
                   <h4 className="text-sm font-medium text-blue-400 mb-1">AI Auto Mode Enabled</h4>
