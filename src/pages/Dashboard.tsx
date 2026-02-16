@@ -37,9 +37,8 @@ export const Dashboard: React.FC = () => {
         setLoading(true);
       }
 
-      const [spotBotsResponse, futuresBotsResponse, connectedExchangesResponse, userProfile] = await Promise.all([
-        apiService.getSpotBots(),
-        apiService.getFuturesBots(),
+      const [botsResponse, connectedExchangesResponse, userProfile] = await Promise.all([
+        apiService.getAllBots(),
         apiService.getConnectedExchanges(),
         apiService.getProfile().catch((err) => {
           console.error('Failed to fetch profile:', err);
@@ -50,6 +49,7 @@ export const Dashboard: React.FC = () => {
       // Debug: Log profile response to see subscription tier
       console.log('📦 Profile Response:', userProfile);
       console.log('📦 Profile subscription_tier:', userProfile?.subscription_tier);
+      console.log('📦 Bots Response:', botsResponse);
 
       const normalizeBot = (bot: any, type: 'spot' | 'futures') => {
         // Robustly determine if bot is running
@@ -79,12 +79,15 @@ export const Dashboard: React.FC = () => {
         };
       };
 
-      const futuresBots = Array.isArray(futuresBotsResponse)
-        ? futuresBotsResponse.map((b: any) => normalizeBot(b, 'futures'))
-        : [];
-      const spotBots = Array.isArray(spotBotsResponse)
-        ? spotBotsResponse.map((b: any) => normalizeBot(b, 'spot'))
-        : [];
+      // getAllBots() returns { futures: [...], spot: [...] } from /api/bots/
+      const futuresRaw = Array.isArray(botsResponse.futures) ? botsResponse.futures : [];
+      const spotRaw = Array.isArray(botsResponse.spot) ? botsResponse.spot : [];
+
+      const futuresBots = futuresRaw.map((b: any) => normalizeBot(b, 'futures'));
+      const spotBots = spotRaw.map((b: any) => normalizeBot(b, 'spot'));
+
+      console.log('📊 Futures bots:', futuresBots.length, 'running:', futuresBots.filter((b: any) => b.is_running).length);
+      console.log('📊 Spot bots:', spotBots.length, 'running:', spotBots.filter((b: any) => b.is_running).length);
 
       const allBots = [...futuresBots, ...spotBots];
 
