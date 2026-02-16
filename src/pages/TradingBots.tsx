@@ -11,7 +11,7 @@ import { PriceChart } from '../components/ui/PriceChart';
 import { apiService } from '../utils/api';
 import { getExchangeLogo, getExchangeGradient } from '../utils/exchangeLogos';
 import { useAuthStore } from '../store/authStore';
-import { Plus, TrendingUp, TrendingDown, Key, Eye, EyeOff, Trash2 } from 'lucide-react';
+import { Plus, TrendingUp, TrendingDown, Key, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { getErrorMessage, isAuthError, isPermissionError, isValidationError, isServerError } from '../utils/errorUtils';
 import { saveBotConfig, deleteBotConfig, hideBot, isBotHidden, cleanupHiddenBots } from '../utils/botStorage';
@@ -45,7 +45,6 @@ export const TradingBots: React.FC = () => {
   const [showModal, setShowModal] = useState(searchParams.get('create') === 'true');
   const [activeTab, setActiveTab] = useState<'all' | 'spot' | 'futures'>('all');
   const [creating, setCreating] = useState(false);
-  const [showApiSecret, setShowApiSecret] = useState(false);
   const [gridSizeError, setGridSizeError] = useState('');
   const [selectedBot, setSelectedBot] = useState<TradingBot | null>(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
@@ -341,6 +340,9 @@ export const TradingBots: React.FC = () => {
             leverage: response.leverage || botConfig.leverage,
             strategy_type: response.strategy_type || botConfig.strategy_type,
             created_at: response.date_created || response.created_at || new Date().toISOString(),
+            loss_threshold: botForm.loss_threshold,
+            acceptable_loss_per_grid: botForm.acceptable_loss_per_grid,
+            enable_grid_stop_loss: botForm.enable_grid_stop_loss,
             api_response: response
           };
           console.log('💾 Saving config to localStorage:', configToSave);
@@ -368,6 +370,9 @@ export const TradingBots: React.FC = () => {
             investment_amount: response.investment_amount || parseFloat(botForm.investment_amount),
             run_hours: parseInt(botForm.run_hours), // Always use form value
             created_at: response.date_created || response.created_at || new Date().toISOString(),
+            loss_threshold: botForm.loss_threshold,
+            acceptable_loss_per_grid: botForm.acceptable_loss_per_grid,
+            enable_grid_stop_loss: botForm.enable_grid_stop_loss,
             api_response: response
           };
           console.log('💾 Saving config to localStorage:', configToSave);
@@ -680,7 +685,7 @@ export const TradingBots: React.FC = () => {
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-lg bg-[var(--color-primary)]/15 flex items-center justify-center">
-                    <img src="/MERLIN.png" alt="Bot" className="w-5 h-5 object-contain" />
+                    <img src="/MERLIN.jpg" alt="Bot" className="w-5 h-5 object-contain" />
                   </div>
                   <div>
                     <h3 className="font-semibold text-white">{bot.name || `${bot.pair || 'Unknown'} Bot`}</h3>
@@ -758,7 +763,7 @@ export const TradingBots: React.FC = () => {
       ) : (
         <div className="empty-state">
           <div className="empty-state-icon">
-            <img src="/MERLIN.png" alt="No bots" className="w-8 h-8 object-contain" />
+            <img src="/MERLIN.jpg" alt="No bots" className="w-8 h-8 object-contain" />
           </div>
           <h3 className="empty-state-title">No Bots Yet</h3>
           <p className="empty-state-description">
@@ -920,24 +925,15 @@ export const TradingBots: React.FC = () => {
               </p>
             )}
 
-            <div className="relative">
-              <Input
-                label="API Secret"
-                type={showApiSecret ? "text" : "password"}
-                value={botForm.api_secret}
-                onChange={(e) => setBotForm({ ...botForm, api_secret: e.target.value })}
-                placeholder="Enter your exchange API secret"
-                icon={<Key className="w-5 h-5 text-gray-400" />}
-                required
-              />
-              <button
-                type="button"
-                className="absolute right-3 top-9 text-gray-400 hover:text-white transition-colors"
-                onClick={() => setShowApiSecret(!showApiSecret)}
-              >
-                {showApiSecret ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-              </button>
-            </div>
+            <Input
+              label="API Secret"
+              type="password"
+              value={botForm.api_secret}
+              onChange={(e) => setBotForm({ ...botForm, api_secret: e.target.value })}
+              placeholder="Enter your exchange API secret"
+              icon={<Key className="w-5 h-5 text-gray-400" />}
+              required
+            />
             {botForm.api_secret && (botForm.api_secret.includes('@') || botForm.api_secret.length < 16) && (
               <p className="text-red-400 text-xs mt-1">
                 ⚠️ This doesn't look like a valid API secret. Please use your exchange API credentials.
@@ -959,7 +955,7 @@ export const TradingBots: React.FC = () => {
             <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4">
               <div className="flex items-start space-x-3">
                 <div className="flex-shrink-0">
-                  <img src="/MERLIN.png" alt="AI Mode" className="w-8 h-8 object-contain" />
+                  <img src="/MERLIN.jpg" alt="AI Mode" className="w-8 h-8 object-contain" />
                 </div>
                 <div>
                   <h4 className="text-sm font-medium text-blue-400 mb-1">AI Auto Mode Enabled</h4>
@@ -1061,6 +1057,54 @@ export const TradingBots: React.FC = () => {
                     <p className="text-xs text-purple-300">
                       <span className="font-medium">🤖 Auto Strategy:</span> The bot will automatically determine the optimal position direction (Long/Short) based on real-time market analysis.
                     </p>
+                  </div>
+
+                  {/* Risk Management Section */}
+                  <div className="space-y-4 pt-4 border-t border-gray-700/50">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="text-sm font-medium text-white">Grid Stop Loss</h4>
+                        <p className="text-xs text-gray-500">Automatically stop bot if losses exceed thresholds</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setBotForm({ ...botForm, enable_grid_stop_loss: !botForm.enable_grid_stop_loss })}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${botForm.enable_grid_stop_loss ? 'bg-[var(--color-primary)]' : 'bg-gray-600'
+                          }`}
+                      >
+                        <span
+                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${botForm.enable_grid_stop_loss ? 'translate-x-6' : 'translate-x-1'
+                            }`}
+                        />
+                      </button>
+                    </div>
+
+                    {botForm.enable_grid_stop_loss && (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-2">
+                        <div>
+                          <Input
+                            label="Loss Threshold (%)"
+                            type="number"
+                            step="0.1"
+                            value={botForm.loss_threshold}
+                            onChange={(e) => setBotForm({ ...botForm, loss_threshold: e.target.value })}
+                            placeholder="Default: 10%"
+                          />
+                          <p className="text-xs text-gray-500 mt-1 italic">Optional: Defaults to 10% of investment</p>
+                        </div>
+                        <div>
+                          <Input
+                            label="Acceptable Loss/Grid (%)"
+                            type="number"
+                            step="0.1"
+                            value={botForm.acceptable_loss_per_grid}
+                            onChange={(e) => setBotForm({ ...botForm, acceptable_loss_per_grid: e.target.value })}
+                            placeholder="Default: 1.5%"
+                          />
+                          <p className="text-xs text-gray-500 mt-1 italic">Optional: Defaults to 1.5%</p>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
@@ -1180,6 +1224,54 @@ export const TradingBots: React.FC = () => {
                       <span className="font-medium">🤖 Auto Strategy:</span> The bot will automatically determine the optimal position direction (Long/Short) based on real-time market analysis.
                     </p>
                   </div>
+
+                  {/* Risk Management Section */}
+                  <div className="space-y-4 pt-4 border-t border-gray-700/50">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="text-sm font-medium text-white">Grid Stop Loss</h4>
+                        <p className="text-xs text-gray-500">Automatically stop bot if losses exceed thresholds</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setBotForm({ ...botForm, enable_grid_stop_loss: !botForm.enable_grid_stop_loss })}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${botForm.enable_grid_stop_loss ? 'bg-[var(--color-primary)]' : 'bg-gray-600'
+                          }`}
+                      >
+                        <span
+                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${botForm.enable_grid_stop_loss ? 'translate-x-6' : 'translate-x-1'
+                            }`}
+                        />
+                      </button>
+                    </div>
+
+                    {botForm.enable_grid_stop_loss && (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-2">
+                        <div>
+                          <Input
+                            label="Loss Threshold (%)"
+                            type="number"
+                            step="0.1"
+                            value={botForm.loss_threshold}
+                            onChange={(e) => setBotForm({ ...botForm, loss_threshold: e.target.value })}
+                            placeholder="Default: 10%"
+                          />
+                          <p className="text-xs text-gray-500 mt-1 italic">Optional: Defaults to 10% of investment</p>
+                        </div>
+                        <div>
+                          <Input
+                            label="Acceptable Loss/Grid (%)"
+                            type="number"
+                            step="0.1"
+                            value={botForm.acceptable_loss_per_grid}
+                            onChange={(e) => setBotForm({ ...botForm, acceptable_loss_per_grid: e.target.value })}
+                            placeholder="Default: 1.5%"
+                          />
+                          <p className="text-xs text-gray-500 mt-1 italic">Optional: Defaults to 1.5%</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
             </>
@@ -1238,7 +1330,7 @@ export const TradingBots: React.FC = () => {
             </Button>
           </div>
         </form>
-      </Modal>
-    </div>
+      </Modal >
+    </div >
   );
 };

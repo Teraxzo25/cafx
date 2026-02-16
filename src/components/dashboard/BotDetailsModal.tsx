@@ -331,6 +331,55 @@ export const BotDetailsModal: React.FC<BotDetailsModalProps> = ({
             </div>
           )}
 
+          {/* Risk Management Details */}
+          {(() => {
+            // Read stop-loss fields from config, api_response, or raw bot data
+            const enableGridStopLoss = config.enable_grid_stop_loss ?? config.api_response?.enable_grid_stop_loss;
+            const lossThreshold = config.loss_threshold || config.api_response?.loss_threshold;
+            const lossPerGrid = config.acceptable_loss_per_grid || config.api_response?.acceptable_loss_per_grid;
+            const hasStopLossData = enableGridStopLoss !== undefined || lossThreshold || lossPerGrid;
+
+            if (!hasStopLossData) return null;
+
+            return (
+              <div className="bg-gray-800/60 rounded-xl p-4 border border-gray-700/50 backdrop-blur-sm">
+                <div className="flex items-center space-x-2 mb-4">
+                  <div className="p-1.5 bg-red-500/20 rounded-lg">
+                    <Shield className="w-3.5 h-3.5 text-red-400" />
+                  </div>
+                  <h3 className="text-xs sm:text-sm font-semibold text-white">Risk Management</h3>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                  <div>
+                    <p className="text-[10px] text-gray-500 mb-1 uppercase tracking-wider">Grid Stop Loss</p>
+                    <div className="flex items-center space-x-2">
+                      <div className={`w-2 h-2 rounded-full ${enableGridStopLoss ? 'bg-emerald-400 animate-pulse' : 'bg-gray-500'}`} />
+                      <p className={`text-sm font-bold ${enableGridStopLoss ? 'text-emerald-400' : 'text-gray-400'}`}>
+                        {enableGridStopLoss ? 'Enabled' : 'Disabled'}
+                      </p>
+                    </div>
+                  </div>
+                  {lossThreshold && (
+                    <div>
+                      <p className="text-[10px] text-gray-500 mb-1 uppercase tracking-wider">Loss Threshold</p>
+                      <p className="text-sm font-bold text-white">
+                        {typeof lossThreshold === 'string' && !lossThreshold.includes('%') ? `${lossThreshold}%` : lossThreshold}
+                      </p>
+                    </div>
+                  )}
+                  {lossPerGrid && (
+                    <div>
+                      <p className="text-[10px] text-gray-500 mb-1 uppercase tracking-wider">Loss Per Grid</p>
+                      <p className="text-sm font-bold text-white">
+                        {typeof lossPerGrid === 'string' && !lossPerGrid.includes('%') ? `${lossPerGrid}%` : lossPerGrid}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })()}
+
           {/* Meta Grid Configuration - Visual Ladder & Details */}
           {(() => {
             const metaData = Array.isArray(config.meta) ? config.meta[0] : config.meta;

@@ -15,6 +15,9 @@ interface BotConfig {
   run_hours: number;
   leverage?: number;
   strategy_type?: string;
+  loss_threshold?: string;
+  acceptable_loss_per_grid?: string;
+  enable_grid_stop_loss?: boolean;
   created_at: string;
   api_response?: any; // Store complete API response for additional details
   meta?: any[];
