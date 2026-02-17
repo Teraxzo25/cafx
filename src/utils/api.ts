@@ -209,7 +209,7 @@ export const apiService = {
   },
 
   getSpotBots: async (active?: boolean, exchange?: string) => {
-    const params: Record<string, any> = {};
+    const params: Record<string, any> = {}; 
     if (active !== undefined) params.active = active.toString();
     if (exchange) params.exchange = exchange;
 
