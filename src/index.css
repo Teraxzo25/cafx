@@ -801,12 +801,172 @@ a:focus-visible,
   100% { opacity: 0.7; transform: scale(1.15); }
 }
 
+/* ============================================
+   MERLIN HERO SECTION
+   ============================================ */
+
+.merlin-hero {
+  background: linear-gradient(
+    135deg,
+    rgba(127, 90, 240, 0.08) 0%,
+    rgba(26, 26, 46, 0.95) 40%,
+    rgba(26, 26, 46, 0.95) 60%,
+    rgba(37, 99, 235, 0.06) 100%
+  );
+  border: 1px solid var(--color-border);
+  border-radius: 24px;
+  padding: 2rem 2rem 2.5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.merlin-hero::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(127, 90, 240, 0.5),
+    rgba(37, 99, 235, 0.3),
+    transparent
+  );
+}
+
+.merlin-hero-subtitle {
+  font-size: 1.125rem;
+  font-weight: 600;
+  font-style: italic;
+  color: var(--color-primary);
+  margin-top: 0.25rem;
+}
+
+.merlin-hero-icon-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: var(--color-surface-light);
+  border: 1px solid var(--color-border);
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.merlin-hero-icon-btn:hover {
+  border-color: var(--color-border-light);
+  color: white;
+  background: var(--color-surface);
+}
+
+.merlin-hero-avatar-wrapper {
+  position: relative;
+  width: 180px;
+  height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.merlin-hero-glow-ring {
+  position: absolute;
+  inset: -15%;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(127, 90, 240, 0.2) 0%,
+    rgba(127, 90, 240, 0.05) 50%,
+    transparent 70%
+  );
+  animation: heroGlowPulse 3s ease-in-out infinite alternate;
+}
+
+.merlin-hero-avatar {
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  overflow: hidden;
+  position: relative;
+  z-index: 1;
+  animation: heroFloat 4s ease-in-out infinite;
+  box-shadow:
+    0 0 30px rgba(127, 90, 240, 0.2),
+    0 0 60px rgba(127, 90, 240, 0.1);
+}
+
+.merlin-hero-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+}
+
+.merlin-hero-highlight {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-light));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+@keyframes heroFloat {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-12px);
+  }
+}
+
+@keyframes heroGlowPulse {
+  0% {
+    opacity: 0.4;
+    transform: scale(0.95);
+  }
+  100% {
+    opacity: 0.8;
+    transform: scale(1.1);
+  }
+}
+
+/* Mobile responsiveness */
+@media (max-width: 640px) {
+  .merlin-hero {
+    padding: 1.5rem 1.25rem 2rem;
+    border-radius: 20px;
+  }
+
+  .merlin-hero-avatar-wrapper {
+    width: 140px;
+    height: 140px;
+  }
+
+  .merlin-hero-avatar {
+    width: 120px;
+    height: 120px;
+  }
+
+  .merlin-hero-subtitle {
+    font-size: 1rem;
+  }
+}
+
 /* Reduce motion for accessibility */
 @media (prefers-reduced-motion: reduce) {
   .merlin-floating-item {
     animation: none !important;
   }
   .merlin-glow {
+    animation: none !important;
+  }
+  .merlin-hero-avatar {
+    animation: none !important;
+  }
+  .merlin-hero-glow-ring {
     animation: none !important;
   }
 }
