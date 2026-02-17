@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuthStore } from '../store/authStore';
 import { useNavigate } from 'react-router-dom';
 import { DashboardStats } from '../components/dashboard/DashboardStats';
+import { MerlinHero } from '../components/dashboard/MerlinHero';
 import { RecentActivity } from '../components/dashboard/RecentActivity';
 import { PerformanceChart } from '../components/dashboard/PerformanceChart';
 import { Card } from '../components/ui/Card';
@@ -193,16 +194,14 @@ export const Dashboard: React.FC = () => {
 
   return (
     <div className="space-y-8 fade-in">
-      {/* Header */}
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-white">
-            Welcome back, {user?.username}
-          </h1>
-          <p className="text-gray-500 mt-1">
-            Here's an overview of <span className="text-[var(--color-primary)] font-semibold">MERLIN's</span> Trading Performance
-          </p>
-        </div>
+      {/* Merlin Hero Section */}
+      <MerlinHero />
+
+      {/* Stats */}
+      <div className="flex items-center justify-between mb-2">
+        <p className="text-gray-500">
+          Here's an overview of <span className="text-[var(--color-primary)] font-semibold">MERLIN's</span> Trading Performance
+        </p>
         <button
           onClick={() => fetchDashboardData(true)}
           disabled={refreshing}
@@ -212,8 +211,6 @@ export const Dashboard: React.FC = () => {
           <RefreshCw className={`w-4 h-4 text-gray-400 ${refreshing ? 'animate-spin' : ''}`} />
         </button>
       </div>
-
-      {/* Stats */}
       <DashboardStats stats={stats} />
 
       {/* Performance Chart */}
